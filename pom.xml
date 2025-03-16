@@ -9,22 +9,19 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependencies>
-            <!-- Dependencia de JUnit para pruebas -->
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>5.7.1</version>
-                <scope>test</scope>
-            </dependency>
+        <!-- Dependencia de JUnit para pruebas -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.7.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.7.1</version>
         </dependency>
-    </dependencies>
-
     </dependencies>
 
     <build>
