@@ -30,19 +30,18 @@ steps:
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clona el repo desde Azure, solo la rama Produccion
-    git clone --single-branch --branch Produccion $(Build.Repository.Uri) repo-tmp
+    rem Clona el repo desde GitHub con autenticación por token (no Azure)
+    git clone --single-branch --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Verifica si el remote github ya existe
-    git remote remove github || echo "Remote no existía"
-    git remote add github https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git
+    rem Agrega el remote de Azure si no existe
+    git remote add azure $(Build.Repository.Uri) || echo "Remote Azure ya existe"
 
-    rem Asegura que estás en la rama correcta
-    git checkout Produccion
+    rem Trae los últimos cambios desde Azure
+    git pull azure Produccion --rebase
 
-    rem Empuja la rama forzadamente a GitHub
-    git push github Produccion --force
+    rem Push forzado a GitHub (lo deja idéntico al de Azure)
+    git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
 
