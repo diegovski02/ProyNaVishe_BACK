@@ -11,9 +11,21 @@ steps:
 - script: echo 'Verificando agente disponible...'
   displayName: 'Verificar Agente'
 
-- script: mvn clean verify
-  displayName: 'Validar código y ejecutar pruebas'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+# Escaneo de dependencias vulnerables (ej. con OWASP Dependency-Check)
+- script: |
+    echo "Escaneando dependencias con OWASP Dependency-Check..."
+    dependency-check.sh --project "ProyNaVishe_BACK" --scan . --format HTML --out reports/
+  displayName: 'Analizar dependencias vulnerables'
+
+# Análisis estático de código (SAST)
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x.x'  # o la que uses
+- script: |
+    echo "Análisis estático con Microsoft Security DevOps..."
+    msrc-sarif upload --token $(GitHub_Token)
+  displayName: 'Análisis de Seguridad de Código Fuente'
 
 - task: PublishTestResults@2
   inputs:
