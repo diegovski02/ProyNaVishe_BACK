@@ -19,7 +19,7 @@ steps:
     git clone --mirror $(Build.Repository.Uri) repo-tmp
     cd repo-tmp
 
-    git remote add github https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git
+    git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/usuario/repositorio.git
     git push github --mirror
   displayName: "Push automático a GitHub desde Azure"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Pruebas'))
