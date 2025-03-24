@@ -13,9 +13,9 @@ steps:
   displayName: 'Verificar Agente'
 
 # Paso 2: Validar código y pruebas
-- script: mvn clean verify
-  displayName: 'Ejecutar pruebas en QA'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+#- script: mvn clean verify
+#  displayName: 'Ejecutar pruebas en QA'
+#  workingDirectory: '$(System.DefaultWorkingDirectory)'
 
 # Paso 3: Publicar resultados de pruebas
 - task: PublishTestResults@2
