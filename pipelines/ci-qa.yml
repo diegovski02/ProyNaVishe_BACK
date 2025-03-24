@@ -27,7 +27,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '8.x.x'
+    version: '8.0.201'
   displayName: 'Instalar .NET SDK'
 
 # Paso 5: Análisis de seguridad DevSecOps
