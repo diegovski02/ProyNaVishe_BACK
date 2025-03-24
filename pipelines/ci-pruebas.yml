@@ -9,23 +9,25 @@ pool:
 
 steps:
 - script: |
-    echo 'Verificando agente disponible...'
+    echo Verificando agente disponible...
+
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    # Clona el repositorio GitHub directamente con el token
+    rem Clona el repositorio desde GitHub con el token de acceso
     git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    # Asegura que tienes lo último del branch actual
-    git pull origin $(Build.SourceBranchName)
+    rem Trae últimos cambios desde GitHub en la misma rama
+    git pull origin $(Build.SourceBranchName) --rebase
 
-    # Agrega el repositorio de Azure (si no existe) y sincroniza
-    git remote add azure $(Build.Repository.Uri) || true
-    git pull azure $(Build.SourceBranchName)
+    rem Conecta con el repositorio de Azure (si no existe)
+    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
+    git pull azure $(Build.SourceBranchName) --rebase
 
-    # Push a GitHub
+    rem Push final desde Azure a GitHub
     git push origin HEAD:$(Build.SourceBranchName)
-  displayName: 'Push automático desde Azure a GitHub'
+  displayName: 'Push automático a GitHub desde Azure (sin conflictos)'
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Pruebas'))
+
 
