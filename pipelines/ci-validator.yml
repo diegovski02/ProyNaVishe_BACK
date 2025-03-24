@@ -5,7 +5,7 @@ variables:
 - group: GitHubSecrets
 
 pool:
-  name: 'Default'
+  vmImage: 'windows-latest'
 
 steps:
 # Paso 1: Verificar el agente
@@ -23,11 +23,18 @@ steps:
     testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
     testRunTitle: 'Resultados de Pruebas Backend'
 
-# Paso 4: Análisis de Seguridad con Microsoft Security DevOps
+# Paso 4: Instalar .NET SDK (necesario para MicrosoftSecurityDevOps)
+- task: UseDotNet@2
+  displayName: 'Instalar .NET SDK 8'
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+# Paso 5: Análisis de Seguridad DevSecOps
 - task: MicrosoftSecurityDevOps@1
   displayName: 'Análisis de Seguridad DevSecOps'
 
-# Paso 5: Push automático a GitHub desde Azure (solo si está en rama Test1)
+# Paso 6: Push automático a GitHub desde Azure (solo si estás en rama Test1)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
@@ -38,4 +45,4 @@ steps:
     git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
     git push github --mirror
   displayName: "Push automático a GitHub desde Azure"
-  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Pruebas'))
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Test1'))
