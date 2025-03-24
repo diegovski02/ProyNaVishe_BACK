@@ -9,10 +9,10 @@ pool:
 
 steps:
 # Paso 1: Verificar el agente
-- script: echo Verificando agente disponible...
+- script: echo 'Verificando agente disponible...'
   displayName: 'Verificar Agente'
 
-# Paso 2: Validar código y pruebas con Maven
+# Paso 2: Validar código y pruebas con Maven (opcional si usas Java)
 # - script: mvn clean verify
 #   displayName: 'Validar código y ejecutar pruebas'
 #   workingDirectory: '$(System.DefaultWorkingDirectory)'
@@ -23,35 +23,43 @@ steps:
     testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
     testRunTitle: 'Resultados de Pruebas Backend'
 
-# Paso 4: Instalar .NET SDK (necesario para MicrosoftSecurityDevOps)
+# Paso 4: Instalar .NET SDK (necesario para análisis DevSecOps)
 - task: UseDotNet@2
   displayName: 'Instalar .NET SDK 8'
   inputs:
     packageType: 'sdk'
     version: '8.0.x'
 
-# Paso 5: Análisis de Seguridad DevSecOps
+# Paso 5: Limpieza de archivos peligrosos antes del análisis
+- script: |
+    echo "Eliminando archivos potencialmente sospechosos..."
+    del /S /Q *.exe *.dll *.zip *.rar *.bin *.tmp || echo "No se encontraron archivos a eliminar"
+  displayName: 'Limpieza previa al análisis DevSecOps'
+
+# Paso 6: Análisis de Seguridad DevSecOps
 - task: MicrosoftSecurityDevOps@1
   displayName: 'Análisis de Seguridad DevSecOps'
 
-# Paso 6: Push automático a GitHub desde Azure (sin conflictos)
+# Paso 7: Push automático a GitHub desde Azure (solo si estás en rama Test1)
 - script: |
-    echo Configurando credenciales Git...
+    echo "Configurando Git..."
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    echo Clonando repositorio desde GitHub...
+    echo "Clonando desde GitHub..."
     git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    echo Realizando pull desde GitHub (con rebase)...
+    echo "Haciendo pull con rebase para evitar conflictos..."
     git pull origin $(Build.SourceBranchName) --rebase
 
-    echo Verificando o agregando conexión con Azure Repo...
-    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
+    echo "Agregando remoto Azure si no existe..."
+    git remote add azure $(Build.Repository.Uri) || echo "Ya existe remoto Azure"
+
+    echo "Haciendo pull desde Azure con rebase..."
     git pull azure $(Build.SourceBranchName) --rebase
 
-    echo Push final hacia GitHub...
+    echo "Realizando push final a GitHub..."
     git push origin HEAD:$(Build.SourceBranchName)
   displayName: "Push automático a GitHub desde Azure (sin conflictos)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Test1'))
