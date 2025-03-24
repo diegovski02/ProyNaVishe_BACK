@@ -1,0 +1,35 @@
+trigger:
+  - QA
+
+variables:
+  - group: GitHubSecrets
+
+pool:
+  name: 'Default'
+
+steps:
+# Paso 1: Verificar el agente
+- script: echo 'Verificando agente disponible...'
+  displayName: 'Verificar Agente'
+
+# Paso 2: Validar código y pruebas
+- script: mvn clean verify
+  displayName: 'Ejecutar pruebas en QA'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+# Paso 3: Publicar resultados de pruebas
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
+    testRunTitle: 'Resultados QA - Backend'
+
+# Paso 4: Instalar .NET SDK (necesario para análisis)
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x.x'
+  displayName: 'Instalar .NET SDK'
+
+# Paso 5: Análisis de seguridad DevSecOps
+- task: MicrosoftSecurityDevOps@1
+  displayName: 'Análisis de Seguridad QA'
