@@ -25,20 +25,18 @@ steps:
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
-# Paso 4: Push automático desde Azure a GitHub (solo rama Producción)
+# Paso 4: Push automático desde Azure a GitHub (forzado y limpio)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clona solo la rama Producción
-    git clone --single-branch --branch $(Build.SourceBranchName) https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    rem Clona solo la rama Producción desde Azure
+    git clone --single-branch --branch Produccion $(Build.Repository.Uri) repo-tmp
     cd repo-tmp
 
-    rem Sincroniza con Azure solo la rama actual
-    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
-    git pull azure $(Build.SourceBranchName) --rebase
-
-    rem Push limpio solo de Producción
-    git push origin HEAD:$(Build.SourceBranchName)
-  displayName: "Push automático a GitHub desde Azure (Producción)"
+    rem Agrega el repo GitHub y fuerza el push
+    git remote add github https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git
+    git push github Produccion --force
+  displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
+
