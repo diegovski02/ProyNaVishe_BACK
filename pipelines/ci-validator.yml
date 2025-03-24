@@ -5,41 +5,35 @@ variables:
 - group: GitHubSecrets
 
 pool:
-  name: 'Default'
+  vmImage: 'windows-latest'
 
 steps:
+# Paso 1: Verificar el agente
 - script: echo 'Verificando agente disponible...'
   displayName: 'Verificar Agente'
 
-# Escaneo de dependencias vulnerables (ej. con OWASP Dependency-Check)
-- script: |
-    echo "Escaneando dependencias con OWASP Dependency-Check..."
-    dependency-check.sh --project "ProyNaVishe_BACK" --scan . --format HTML --out reports/
-  displayName: 'Analizar dependencias vulnerables'
+# Paso 2: Validar código y pruebas con Maven
+- script: mvn clean verify
+  displayName: 'Validar código y ejecutar pruebas'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
 
-# Análisis estático de código (SAST)
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '6.x.x'  # o la que uses
-- script: |
-    echo "Análisis estático con Microsoft Security DevOps..."
-    msrc-sarif upload --token $(GitHub_Token)
-  displayName: 'Análisis de Seguridad de Código Fuente'
-
+# Paso 3: Publicar resultados de pruebas
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
     testRunTitle: 'Resultados de Pruebas Backend'
 
+# Paso 4: Análisis de Seguridad con Microsoft Security DevOps
+- task: MicrosoftSecurityDevOps@1
+  displayName: 'Análisis de Seguridad DevSecOps'
+
+# Paso 5: Push automático a GitHub desde Azure (solo si está en rama Test1)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
-
     git clone --mirror $(Build.Repository.Uri) repo-tmp
     cd repo-tmp
-
-    git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
+    git remote add github https://${{GITHUB_TOKEN}}:x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
     git push github --mirror
   displayName: "Push automático a GitHub desde Azure"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Test1'))
