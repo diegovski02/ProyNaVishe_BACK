@@ -8,12 +8,12 @@ pool:
   name: 'Default'
 
 steps:
-
-# Paso 1: Verificar que el agente esté disponible
+# Paso 1: Verificar el agente
 - script: echo Iniciando Deploy a Producción...
   displayName: 'Verificar Agente'
 
-# Paso 2 (opcional): Despliegue del sistema (ajustar según infraestructura)
+# Paso 2: Despliegue (personalizable)
+# Aquí puedes poner AzureWebApp o cualquier otra acción de despliegue real.
 # - task: AzureWebApp@1
 #   inputs:
 #     azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
@@ -21,27 +21,24 @@ steps:
 #     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
 #   displayName: 'Desplegar a Producción'
 
-# Paso 3: Mensaje de despliegue exitoso
+# Paso 3: Notificación de despliegue
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
-# Paso 4: Push automático de Azure a GitHub (sin sobrescribir ramas)
+# Paso 4: Push automático desde Azure a GitHub (solo rama Producción)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clona el repositorio desde GitHub usando token
-    git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    rem Clona solo la rama Producción
+    git clone --single-branch --branch $(Build.SourceBranchName) https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Trae los últimos cambios de la rama Produccion de GitHub
-    git pull origin Produccion --rebase
+    rem Sincroniza con Azure solo la rama actual
+    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
+    git pull azure $(Build.SourceBranchName) --rebase
 
-    rem Conecta con el repositorio Azure (si no existe)
-    git remote add azure $(Build.Repository.Uri) || echo "Remoto ya existe"
-    git pull azure Produccion --rebase
-
-    rem Empuja solo la rama Produccion desde Azure a GitHub
-    git push origin HEAD:Produccion
-  displayName: "Push automático a GitHub desde Azure (Producción sin conflictos)"
+    rem Push limpio solo de Producción
+    git push origin HEAD:$(Build.SourceBranchName)
+  displayName: "Push automático a GitHub desde Azure (Producción)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
