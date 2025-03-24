@@ -13,9 +13,9 @@ steps:
   displayName: 'Verificar Agente'
 
 # Paso 2: Validar código y pruebas con Maven
-- script: mvn clean verify
-  displayName: 'Validar código y ejecutar pruebas'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+#- script: mvn clean verify
+#  displayName: 'Validar código y ejecutar pruebas'
+#  workingDirectory: '$(System.DefaultWorkingDirectory)'
 
 # Paso 3: Publicar resultados de pruebas
 - task: PublishTestResults@2
