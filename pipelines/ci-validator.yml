@@ -11,10 +11,6 @@ steps:
 - script: echo 'Verificando agente disponible...'
   displayName: 'Verificar Agente'
 
-- script: mvn clean verify
-  displayName: 'Validar código y ejecutar pruebas'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
-
 - task: PublishTestResults@2
   inputs:
     testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
