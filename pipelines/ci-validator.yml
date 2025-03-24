@@ -5,7 +5,7 @@ variables:
 - group: GitHubSecrets
 
 pool:
-  vmImage: 'windows-latest'
+  name: 'Default'
 
 steps:
 # Paso 1: Verificar el agente
