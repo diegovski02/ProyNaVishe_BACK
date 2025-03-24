@@ -9,29 +9,39 @@ pool:
 
 steps:
 # Paso 1: Verificar el agente
-- script: echo 'Iniciando Deploy a Producción...'
+- script: echo Iniciando Deploy a Producción...
   displayName: 'Verificar Agente'
 
-# Paso 2: Despliegue (puedes personalizar según el servicio que uses)
-#- task: AzureWebApp@1
-#  inputs:
-#    azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
-#    appName: '<NOMBRE-WEBAPP>'
-#    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-#  displayName: 'Desplegar a Producción'
+# Paso 2: Despliegue (personalizable)
+# Descomenta y configura si estás usando App Service, AKS, etc.
+# - task: AzureWebApp@1
+#   inputs:
+#     azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
+#     appName: '<NOMBRE-WEBAPP>'
+#     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+#   displayName: 'Desplegar a Producción'
 
 # Paso 3: Notificación final
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
+# Paso 4: Push automático desde Azure a GitHub (sin errores de conflicto)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    git clone --mirror $(Build.Repository.Uri) repo-tmp
+    rem Clona el repositorio con token de GitHub
+    git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
-    git push github --mirror
-  displayName: "Push automático a GitHub desde Azure"
+    rem Trae cambios desde GitHub
+    git pull origin $(Build.SourceBranchName) --rebase
+
+    rem Conecta con el repo de Azure si no está
+    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
+    git pull azure $(Build.SourceBranchName) --rebase
+
+    rem Empuja la rama de Producción de Azure a GitHub
+    git push origin HEAD:$(Build.SourceBranchName)
+  displayName: "Push automático a GitHub desde Azure (Producción)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
