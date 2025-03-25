@@ -32,21 +32,23 @@ steps:
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clonamos la rama Main desde Azure con el token de Azure
-    git clone --mirror $(Build.Repository.Uri) repo-tmp
+    rem Clonamos solo la rama main desde GitHub con el token de autenticación
+    git clone --single-branch --branch main https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Eliminamos el remoto GitHub si ya existe
-    git remote remove github || echo "Remote GitHub no existe"
+    rem Eliminamos el remoto Azure si ya existe
+    git remote remove azure || echo "Remote Azure no existe"
 
-    rem Agregamos el remoto de GitHub con el token de GitHub
-    git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
 
-    rem Reseteamos la rama Main de GitHub para que sea idéntica a la de Azure
+    rem Traemos los últimos cambios de la rama main desde Azure
     git fetch azure main
+
+    rem Reseteamos la rama main de GitHub para que sea idéntica a la de Azure
     git reset --hard azure/main
 
-    rem Realizamos el push forzado para sobrescribir la rama Main en GitHub
-    git push github --mirror
-  displayName: "Push desde Azure a GitHub (Main limpio)"
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git main --force
+  displayName: "Push desde Azure a GitHub (main limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
