@@ -27,23 +27,25 @@ steps:
 
 # Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
 - script: |
+    echo "🔁 Configurando Git..."
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clonamos solo la rama Producción desde GitHub
+    rem Clonando solo la rama Producción desde GitHub
     git clone --single-branch --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Agregamos Azure como remoto si no existe
-    git remote add azure $(Build.Repository.Uri) || echo "Remote Azure ya existe"
+    rem Verificar el estado antes del push
+    git status
 
-    rem Traemos los últimos cambios de la rama Produccion desde Azure
+    rem Sincronizar con el remoto Azure (si no existe, agregarlo)
+    git remote add azure $(Build.Repository.Uri) || echo "Remote Azure ya existe"
     git pull azure Produccion --rebase
 
-    rem Hacemos un commit si es necesario
-    git commit --allow-empty -m "Actualizando desde Azure a GitHub"
+    rem Verificar el estado de nuevo después del pull
+    git status
 
-    rem Empujamos forzosamente al repositorio de GitHub (sin conflictos)
+    rem Push forzado a GitHub
     git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
