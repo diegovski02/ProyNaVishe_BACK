@@ -1,0 +1,37 @@
+trigger:
+  - Produccion
+
+variables:
+  - group: GitHubSecrets
+
+pool:
+  name: 'Default'
+
+steps:
+# Paso 1: Verificar el agente
+- script: echo 'Iniciando Deploy a Producción...'
+  displayName: 'Verificar Agente'
+
+# Paso 2: Despliegue (puedes personalizar según el servicio que uses)
+#- task: AzureWebApp@1
+#  inputs:
+#    azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
+#    appName: '<NOMBRE-WEBAPP>'
+#    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+#  displayName: 'Desplegar a Producción'
+
+# Paso 3: Notificación final
+- script: echo "🚀 Despliegue completado en Producción"
+  displayName: 'Finalización del Deploy'
+
+- script: |
+    git config --global user.email "dvegacajas2@gmail.com"
+    git config --global user.name "Diego Vega"
+
+    git clone --mirror $(Build.Repository.Uri) repo-tmp
+    cd repo-tmp
+
+    git remote add github https://$(GITHUB_TOKEN):x-oauth-basic@github.com/diegovski02/ProyNaVishe_BACK.git
+    git push github --mirror
+  displayName: "Push automático a GitHub desde Azure"
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
