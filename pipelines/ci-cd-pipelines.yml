@@ -1,0 +1,81 @@
+trigger:
+  - QA
+
+variables:
+  - group: GitHubSecrets
+  - group: AZURE_TOKEN
+
+pool:
+  name: 'Default'
+
+steps:
+# Paso 1: Verificar el agente
+- script: echo 'Iniciando el CI-QA'
+  displayName: 'Verificar Agente'
+
+# Verificación de las variables de los tokens
+- script: |
+    echo "Verificando AZURE_TOKEN..."
+    echo $(AZURE_TOKEN)  # Esto imprimirá el valor del AZURE_TOKEN
+  displayName: 'Verificar AZURE_TOKEN'
+
+- script: |
+    echo "Verificando GITHUB_TOKEN..."
+    echo $(GITHUB_TOKEN)  # Esto imprimirá el valor del GITHUB_TOKEN
+  displayName: 'Verificar GITHUB_TOKEN'
+
+# Paso 2: Validar código y pruebas (opcional, puedes activarlo si usas Maven)
+# - script: mvn clean verify
+#   displayName: 'Ejecutar pruebas en QA'
+#   workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+# Paso 3: Publicar resultados de pruebas
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
+    testRunTitle: 'Resultados QA - Backend'
+
+# Paso 4: Instalar .NET SDK (para MicrosoftSecurityDevOps)
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.201'
+  displayName: 'Instalar .NET SDK'
+
+# Paso 5: Limpieza de archivos sospechosos antes del análisis (AntiMalware)
+- script: |
+    echo "Eliminando archivos potencialmente conflictivos..."
+    del *.exe /s /q || echo "No hay archivos .exe"
+    del *.zip /s /q || echo "No hay archivos .zip"
+  displayName: 'Limpieza previa al análisis DevSecOps'
+
+# Paso 6: Análisis de seguridad DevSecOps
+- task: MicrosoftSecurityDevOps@1
+  displayName: 'Análisis de Seguridad QA'
+
+# Paso 7: Push automático a GitHub desde Azure (Reemplazo completo)
+- script: |
+    rem Configuramos los usuarios de git
+    git config --global user.email "dvegacajas2@gmail.com"
+    git config --global user.name "Diego Vega"
+
+    rem Clonamos solo la rama QA desde GitHub con el token de autenticación
+    git clone --single-branch --branch QA https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    cd repo-tmp
+
+    rem Eliminamos el remoto Azure si ya existe
+    git remote remove azure || echo "Remote Azure no existe"
+
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
+
+    rem Traemos los últimos cambios de la rama QA desde Azure
+    git fetch azure QA
+
+    rem Reseteamos la rama QA de GitHub para que sea idéntica a la de Azure
+    git reset --hard azure/QA
+
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git QA --force
+  displayName: "Push desde Azure a GitHub (QA limpio)"
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'QA'))
