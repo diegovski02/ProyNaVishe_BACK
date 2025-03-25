@@ -14,7 +14,7 @@ steps:
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
-    
+
     rem Clonamos solo la rama Producción desde GitHub usando el token de Azure DevOps
     git clone --single-branch --branch Produccion https://$(AZURE_TOKEN)@dev.azure.com/yourOrganization/yourProject/_git/ProyNaVishe_BACK repo-tmp
     cd repo-tmp
