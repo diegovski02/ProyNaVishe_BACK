@@ -2,7 +2,7 @@ trigger:
   - Produccion
 
 variables:
-  - group: GitHubSecrets  # Solo necesitas referir al grupo de variables aquí
+  - group: GitHubSecrets  # Definir grupo de variables de secretos
 
 pool:
   name: 'Default'
@@ -11,13 +11,12 @@ steps:
 - script: echo 'Iniciando Deploy a Producción...'
   displayName: 'Verificar Agente'
 
-# Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
 - script: |
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
     rem Clonamos solo la rama Producción desde GitHub
-    git clone --single-branch --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    git clone --single-branch --branch Produccion https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK repo-tmp
     cd repo-tmp
 
     rem Agregamos Azure como remoto si no existe
