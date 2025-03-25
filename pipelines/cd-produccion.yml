@@ -36,19 +36,21 @@ steps:
     cd repo-tmp
 
     echo "🧹 Limpiando el contenido viejo en GitHub..."
-    git rm -rf * # Borramos todos los archivos existentes en GitHub en la rama Produccion
+    git rm -rf * # Asegúrate de que el directorio está vacío antes de hacer cualquier operación
 
+    # Usamos xcopy para Windows para copiar el contenido
     echo "📂 Copiando el contenido actual de Azure DevOps (ya autenticado)..."
-    cp -r "$(Build.SourcesDirectory)/*" . # Usamos 'cp' para copiar todos los archivos
+    xcopy /E /H /Y "$(Build.SourcesDirectory)\*" . 
 
-    echo "📌 Commit de sincronización"
+    # Agregar cambios y realizar commit solo si hay modificaciones
     git add .
-    git commit -m "🎯 Sincronización desde Azure DevOps (Producción)"
+    git diff --cached --quiet || git commit -m "🎯 Sincronización desde Azure DevOps (Producción)"
 
     echo "🚀 Push forzado a GitHub"
     git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
+
 
 
 
