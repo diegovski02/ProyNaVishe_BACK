@@ -3,6 +3,8 @@ trigger:
 
 variables:
   - group: GitHubSecrets
+  - name: AZURE_TOKEN
+    value: $(AZURE_TOKEN)
 
 pool:
   name: 'Default'
@@ -21,13 +23,8 @@ steps:
 #     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
 #   displayName: 'Desplegar a Producción'
 
-# Paso 3: Notificación de despliegue
-- script: echo "🚀 Despliegue completado en Producción"
-  displayName: 'Finalización del Deploy'
-
-# Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
 - script: |
-    echo "🔁 Configurando Git..."
+    echo 'Iniciando Deploy a Producción...'
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
@@ -35,20 +32,13 @@ steps:
     git clone --single-branch --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Verificamos el estado de la rama actual
-    git status
-
-    rem Eliminamos carpetas innecesarias en GitHub si existen
-    echo "Eliminando carpetas innecesarias en GitHub..."
-    rm -rf ./*
-
     rem Agregamos Azure como remoto si no existe
-    git remote add azure $(Build.Repository.Uri) || echo "Remote Azure ya existe"
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/tu_organizacion/tu_proyecto/_git/tu_repositorio || echo "Remote Azure ya existe"
 
-    rem Traemos los últimos cambios de la rama Produccion desde Azure
+    rem Traemos los últimos cambios de la rama Producción desde Azure
     git pull azure Produccion --rebase
 
-    rem Hacemos un commit si es necesario (no hace nada si no hay cambios)
+    rem Hacemos un commit si es necesario
     git commit --allow-empty -m "Actualizando desde Azure a GitHub"
 
     rem Empujamos forzosamente al repositorio de GitHub (sin conflictos)
