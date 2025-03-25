@@ -3,6 +3,7 @@ trigger:
 
 variables:
   - group: GitHubSecrets
+  - group: AZURE_TOKEN
 
 pool:
   name: 'Default'
@@ -11,6 +12,17 @@ steps:
 # Paso 1: Verificar el agente
 - script: echo 'Iniciando Deploy a Producción...'
   displayName: 'Verificar Agente'
+
+# Verificación de las variables de los tokens
+- script: |
+    echo "Verificando AZURE_TOKEN..."
+    echo $(AZURE_TOKEN)  # Esto imprimirá el valor del AZURE_TOKEN
+  displayName: 'Verificar AZURE_TOKEN'
+
+- script: |
+    echo "Verificando GITHUB_TOKEN..."
+    echo $(GITHUB_TOKEN)  # Esto imprimirá el valor del GITHUB_TOKEN
+  displayName: 'Verificar GITHUB_TOKEN'
 
 # Paso 2: Despliegue (personalizable)
 # Aquí puedes poner AzureWebApp o cualquier otra acción de despliegue real.
@@ -38,8 +50,8 @@ steps:
     rem Eliminamos el remoto Azure si ya existe
     git remote remove azure || echo "Remote Azure no existe"
 
-    rem Agregamos el remoto de Azure
-    git remote add azure $(Build.Repository.Uri)
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK
 
     rem Traemos los últimos cambios de la rama Produccion desde Azure
     git pull azure Produccion --rebase
