@@ -31,18 +31,17 @@ steps:
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    echo "📦 Clonando solo la rama Produccion desde GitHub..."
+    rem Clonando solo la rama Produccion desde GitHub
     git clone --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    echo "🧹 Limpiando el contenido viejo en GitHub..."
-    git rm -rf * # Asegúrate de que el directorio está vacío antes de hacer cualquier operación
+    rem Limpiando el contenido viejo en GitHub
+    git rm -rf * # Asegúrate de que el directorio esté vacío antes de realizar el push
 
-    # Usamos xcopy para Windows para copiar el contenido
-    echo "📂 Copiando el contenido actual de Azure DevOps (ya autenticado)..."
+    rem Copiando el contenido actual de Azure DevOps a GitHub
     xcopy /E /H /Y "$(Build.SourcesDirectory)\*" . 
 
-    # Agregar cambios y realizar commit solo si hay modificaciones
+    rem Agregar los cambios y realizar commit solo si hay cambios
     git add .
     git diff --cached --quiet || git commit -m "🎯 Sincronización desde Azure DevOps (Producción)"
 
@@ -50,6 +49,7 @@ steps:
     git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
+
 
 
 
