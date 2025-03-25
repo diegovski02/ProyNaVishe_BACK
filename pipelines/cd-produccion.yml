@@ -39,7 +39,7 @@ steps:
     git remote add azure $(Build.Repository.Uri) || echo "Remote de Azure ya existe"
 
     rem Traer los últimos cambios desde Azure
-    git pull azure Produccion --rebase
+    git pull azure Produccion
 
     rem Verificar el estado de los archivos
     git status
