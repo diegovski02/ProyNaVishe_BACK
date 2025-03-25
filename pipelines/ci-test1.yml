@@ -3,6 +3,7 @@ trigger:
 
 variables:
   - group: GitHubSecrets
+  - group: AZURE_TOKEN
 
 pool:
   name: 'Default'
@@ -40,26 +41,29 @@ steps:
 - task: MicrosoftSecurityDevOps@1
   displayName: 'Análisis de Seguridad DevSecOps'
 
-# Paso 7: Push automático a GitHub desde Azure (solo si estás en rama Test1)
+# Paso 7: Push automático a GitHub desde Azure (Reemplazo completo)
 - script: |
-    echo "Configurando Git..."
+    rem Configuramos los usuarios de git
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    echo "Clonando desde GitHub..."
-    git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    rem Clonamos solo la rama Test1 desde GitHub con el token de autenticación
+    git clone --single-branch --branch Test1 https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    echo "Haciendo pull con rebase para evitar conflictos..."
-    git pull origin $(Build.SourceBranchName) --rebase
+    rem Eliminamos el remoto Azure si ya existe
+    git remote remove azure || echo "Remote Azure no existe"
 
-    echo "Agregando remoto Azure si no existe..."
-    git remote add azure $(Build.Repository.Uri) || echo "Ya existe remoto Azure"
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
 
-    echo "Haciendo pull desde Azure con rebase..."
-    git pull azure $(Build.SourceBranchName) --rebase
+    rem Traemos los últimos cambios de la rama Test1 desde Azure
+    git fetch azure Test1
 
-    echo "Realizando push final a GitHub..."
-    git push origin HEAD:$(Build.SourceBranchName)
-  displayName: "Push automático a GitHub desde Azure (sin conflictos)"
+    rem Reseteamos la rama Test1 de GitHub para que sea idéntica a la de Azure
+    git reset --hard azure/Test1
+
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Test1 --force
+  displayName: "Push desde Azure a GitHub (Test1 limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Test1'))
