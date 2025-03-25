@@ -8,9 +8,24 @@ pool:
   name: 'Default'
 
 steps:
+# Paso 1: Verificar el agente
 - script: echo 'Iniciando Deploy a Producción...'
   displayName: 'Verificar Agente'
 
+# Paso 2: Despliegue (personalizable)
+# Aquí puedes poner AzureWebApp o cualquier otra acción de despliegue real.
+# - task: AzureWebApp@1
+#   inputs:
+#     azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
+#     appName: '<NOMBRE-WEBAPP>'
+#     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+#   displayName: 'Desplegar a Producción'
+
+# Paso 3: Notificación de despliegue
+- script: echo "🚀 Despliegue completado en Producción"
+  displayName: 'Finalización del Deploy'
+
+# Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
 - script: |
     rem Configuramos los usuarios de git
     git config --global user.email "dvegacajas2@gmail.com"
@@ -22,7 +37,7 @@ steps:
 
     rem Eliminamos el remoto Azure si ya existe
     git remote remove azure || echo "Remote Azure no existe"
-    
+
     rem Agregamos el remoto de Azure
     git remote add azure $(Build.Repository.Uri)
 
