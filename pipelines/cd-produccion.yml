@@ -56,9 +56,9 @@ steps:
     rem Traemos los últimos cambios de la rama Produccion desde Azure
     git pull azure Produccion --rebase
 
-    rem Resolver conflicto si existe...
-    git add .
-    git rebase --continue
+    rem Resolver conflictos si los hay y hacer commit
+    git add README.md  # En caso de conflicto, resuelve manualmente el archivo
+    git rebase --continue  # Continuar con el rebase después de resolver el conflicto
 
     rem Hacemos un commit vacío si es necesario
     git commit --allow-empty -m "Actualizando desde Azure a GitHub"
