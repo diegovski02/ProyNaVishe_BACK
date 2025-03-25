@@ -9,7 +9,7 @@ pool:
 
 steps:
 # Paso 1: Verificar el agente
-- script: echo Iniciando Deploy a Producción...
+- script: echo 'Iniciando Deploy a Producción...'
   displayName: 'Verificar Agente'
 
 # Paso 2: Despliegue (personalizable)
@@ -27,31 +27,23 @@ steps:
 
 # Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
 - script: |
-    rem Configurando Git
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clonando solo la rama Producción desde GitHub usando el token de GitHub para autenticación
-    git clone --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    rem Clonamos solo la rama Producción desde GitHub
+    git clone --single-branch --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Agregar el repositorio remoto de Azure (si no existe)
-    git remote add azure $(Build.Repository.Uri) || echo "Remote de Azure ya existe"
+    rem Agregamos Azure como remoto si no existe
+    git remote add azure $(Build.Repository.Uri) || echo "Remote Azure ya existe"
 
-    rem Traer los últimos cambios desde Azure
-    git pull azure Produccion
+    rem Traemos los últimos cambios de la rama Produccion desde Azure
+    git pull azure Produccion --rebase
 
-    rem Verificar el estado de los archivos
-    git status
+    rem Hacemos un commit si es necesario
+    git commit --allow-empty -m "Actualizando desde Azure a GitHub"
 
-    rem Añadir cambios si los hay
-    git add .
-    
-    rem Cometer los cambios (si es necesario)
-    git diff --cached --quiet || git commit -m "Sincronización desde Azure DevOps a GitHub (Producción)"
-
-    rem Realizar un push forzado a GitHub usando HTTPS con el token para la autenticación
-    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Produccion --force
-
+    rem Empujamos forzosamente al repositorio de GitHub (sin conflictos)
+    git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
