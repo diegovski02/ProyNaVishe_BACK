@@ -13,7 +13,7 @@ steps:
   displayName: 'Verificar Agente'
 
 # Paso 2: Despliegue (personalizable)
-# Descomenta y configura si estás usando App Service, AKS, etc.
+# Aquí puedes poner AzureWebApp o cualquier otra acción de despliegue real.
 # - task: AzureWebApp@1
 #   inputs:
 #     azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
@@ -21,7 +21,7 @@ steps:
 #     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
 #   displayName: 'Desplegar a Producción'
 
-# Paso 3: Notificación final
+# Paso 3: Notificación de despliegue
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
@@ -50,8 +50,8 @@ steps:
     rem Cometer los cambios (si es necesario)
     git diff --cached --quiet || git commit -m "Sincronización desde Azure DevOps a GitHub (Producción)"
 
-    rem Realizar un push forzado a GitHub
-    git push origin Produccion --force
+    rem Realizar un push forzado a GitHub usando HTTPS con el token para la autenticación
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Produccion --force
 
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
