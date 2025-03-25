@@ -1,2 +1,2 @@
 # Proy_BACK
-TP 2025-1 | Back-End | ProyNaVishe Abejita
+TP 2025-1 | Back-End | ProyNaVishe
