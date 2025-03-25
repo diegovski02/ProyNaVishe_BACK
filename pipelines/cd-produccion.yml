@@ -61,5 +61,5 @@ steps:
 
     rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
     git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Produccion --force
-  displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
+  displayName: "Push desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
