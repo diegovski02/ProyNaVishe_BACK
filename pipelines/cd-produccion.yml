@@ -16,7 +16,7 @@ steps:
     git config --global user.name "Diego Vega"
 
     rem Clonamos solo la rama Producción desde GitHub
-    git clone --single-branch --branch Produccion https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK repo-tmp
+    git clone --single-branch --branch Produccion https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
     rem Agregamos Azure como remoto si no existe
