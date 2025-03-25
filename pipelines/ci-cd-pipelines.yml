@@ -1,0 +1,69 @@
+trigger:
+  - Test1
+
+variables:
+  - group: GitHubSecrets
+  - group: AZURE_TOKEN
+
+pool:
+  name: 'Default'
+
+steps:
+# Paso 1: Verificar el agente
+- script: echo 'Verificando agente disponible...'
+  displayName: 'Verificar Agente'
+
+# Paso 2: Validar código y pruebas con Maven (opcional si usas Java)
+# - script: mvn clean verify
+#   displayName: 'Validar código y ejecutar pruebas'
+#   workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+# Paso 3: Publicar resultados de pruebas
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/target/surefire-reports/TEST-*.xml'
+    testRunTitle: 'Resultados de Pruebas Backend'
+
+# Paso 4: Instalar .NET SDK (necesario para análisis DevSecOps)
+- task: UseDotNet@2
+  displayName: 'Instalar .NET SDK 8'
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+# Paso 5: Limpieza de archivos peligrosos antes del análisis
+- script: |
+    echo "Eliminando archivos potencialmente sospechosos..."
+    del /S /Q *.exe *.dll *.zip *.rar *.bin *.tmp || echo "No se encontraron archivos a eliminar"
+  displayName: 'Limpieza previa al análisis DevSecOps'
+
+# Paso 6: Análisis de Seguridad DevSecOps
+- task: MicrosoftSecurityDevOps@1
+  displayName: 'Análisis de Seguridad DevSecOps'
+
+# Paso 7: Push automático a GitHub desde Azure (Reemplazo completo)
+- script: |
+    rem Configuramos los usuarios de git
+    git config --global user.email "dvegacajas2@gmail.com"
+    git config --global user.name "Diego Vega"
+
+    rem Clonamos solo la rama Test1 desde GitHub con el token de autenticación
+    git clone --single-branch --branch Test1 https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    cd repo-tmp
+
+    rem Eliminamos el remoto Azure si ya existe
+    git remote remove azure || echo "Remote Azure no existe"
+
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
+
+    rem Traemos los últimos cambios de la rama Test1 desde Azure
+    git fetch azure Test1
+
+    rem Reseteamos la rama Test1 de GitHub para que sea idéntica a la de Azure
+    git reset --hard azure/Test1
+
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Test1 --force
+  displayName: "Push desde Azure a GitHub (Test1 limpio)"
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Test1'))
