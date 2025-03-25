@@ -37,7 +37,7 @@ steps:
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
-# Paso 4: Push automático desde Azure a GitHub (Producción limpio y seguro)
+# Paso 4: Push automático desde Azure a GitHub (Reemplazo completo)
 - script: |
     rem Configuramos los usuarios de git
     git config --global user.email "dvegacajas2@gmail.com"
@@ -54,16 +54,12 @@ steps:
     git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
 
     rem Traemos los últimos cambios de la rama Produccion desde Azure
-    git pull azure Produccion --rebase
+    git fetch azure Produccion
 
-    rem Resolver conflictos si los hay y hacer commit
-    git add README.md
-    git rebase --continue
-    
-    rem Hacemos un commit vacío si es necesario
-    git commit --allow-empty -m "Actualizando desde Azure a GitHub"
+    rem Reseteamos la rama Produccion de GitHub para que sea idéntica a la de Azure
+    git reset --hard azure/Produccion
 
-    rem Hacemos el push forzado a GitHub
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
     git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
