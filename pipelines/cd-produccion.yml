@@ -51,7 +51,7 @@ steps:
     git remote remove azure || echo "Remote Azure no existe"
 
     rem Agregamos el remoto de Azure con el token de Azure
-    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
 
     rem Traemos los últimos cambios de la rama Produccion desde Azure
     git pull azure Produccion --rebase
