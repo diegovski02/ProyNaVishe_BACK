@@ -33,7 +33,7 @@ steps:
     cd repo-tmp
 
     rem Agregamos Azure como remoto si no existe
-    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/tu_organizacion/tu_proyecto/_git/tu_repositorio || echo "Remote Azure ya existe"
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git || echo "Remote Azure ya existe"
 
     rem Traemos los últimos cambios de la rama Producción desde Azure
     git pull azure Produccion --rebase
