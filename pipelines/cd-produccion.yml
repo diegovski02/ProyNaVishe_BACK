@@ -33,13 +33,13 @@ steps:
 
     echo "📦 Clonando solo la rama Produccion desde GitHub..."
     git clone --branch Produccion https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    cd repo-tmp
 
     echo "🧹 Limpiando el contenido viejo en GitHub..."
-    cd repo-tmp
-    git rm -r *  # elimina todo lo viejo en GitHub (de la rama Produccion)
+    git rm -rf * # Borramos todos los archivos existentes en GitHub en la rama Produccion
 
     echo "📂 Copiando el contenido actual de Azure DevOps (ya autenticado)..."
-    xcopy /E /Y "$(Build.SourcesDirectory)\*" .\
+    cp -r "$(Build.SourcesDirectory)/*" . # Usamos 'cp' para copiar todos los archivos
 
     echo "📌 Commit de sincronización"
     git add .
@@ -49,5 +49,6 @@ steps:
     git push origin Produccion --force
   displayName: "Push forzado desde Azure a GitHub (Producción limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Produccion'))
+
 
 
