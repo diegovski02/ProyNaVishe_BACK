@@ -3,31 +3,50 @@ trigger:
 
 variables:
   - group: GitHubSecrets
+  - group: AZURE_TOKEN
 
 pool:
   name: 'Default'
 
 steps:
-- script: |
-    echo Verificando agente disponible...
+# Paso 1: Verificar el agente
+- script: echo 'Iniciando el CI-Pruebas'
+  displayName: 'Verificar Agente'
 
+# Verificación de las variables de los tokens
+- script: |
+    echo "Verificando AZURE_TOKEN..."
+    echo $(AZURE_TOKEN)  # Esto imprimirá el valor del AZURE_TOKEN
+  displayName: 'Verificar AZURE_TOKEN'
+
+- script: |
+    echo "Verificando GITHUB_TOKEN..."
+    echo $(GITHUB_TOKEN)  # Esto imprimirá el valor del GITHUB_TOKEN
+  displayName: 'Verificar GITHUB_TOKEN'
+
+# Paso 2: Push automático desde GitHub a Azure (Reemplazo completo)
+- script: |
+    rem Configuramos los usuarios de git
     git config --global user.email "dvegacajas2@gmail.com"
     git config --global user.name "Diego Vega"
 
-    rem Clona el repositorio desde GitHub con el token de acceso
-    git clone https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
+    rem Clonamos solo la rama Pruebas desde GitHub con el token de autenticación
+    git clone --single-branch --branch Pruebas https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git repo-tmp
     cd repo-tmp
 
-    rem Trae últimos cambios desde GitHub en la misma rama
-    git pull origin $(Build.SourceBranchName) --rebase
+    rem Eliminamos el remoto Azure si ya existe
+    git remote remove azure || echo "Remote Azure no existe"
 
-    rem Conecta con el repositorio de Azure (si no existe)
-    git remote add azure $(Build.Repository.Uri) || echo "Remote ya existe"
-    git pull azure $(Build.SourceBranchName) --rebase
+    rem Agregamos el remoto de Azure con el token de Azure
+    git remote add azure https://$(AZURE_TOKEN)@dev.azure.com/diegovega2/ProyNaVishe/_git/ProyNaVishe_BACK.git
 
-    rem Push final desde Azure a GitHub
-    git push origin HEAD:$(Build.SourceBranchName)
-  displayName: 'Push automático a GitHub desde Azure (sin conflictos)'
+    rem Traemos los últimos cambios de la rama Pruebas desde Azure
+    git fetch azure Pruebas
+
+    rem Reseteamos la rama Pruebas de GitHub para que sea idéntica a la de Azure
+    git reset --hard azure/Pruebas
+
+    rem Hacemos el push forzado para sobrescribir la rama en GitHub con lo que tiene Azure
+    git push https://$(GITHUB_TOKEN)@github.com/diegovski02/ProyNaVishe_BACK.git Pruebas --force
+  displayName: "Push desde Azure a GitHub (Pruebas limpio)"
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'Pruebas'))
-
-
