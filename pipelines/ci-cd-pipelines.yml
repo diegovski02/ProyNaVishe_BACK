@@ -13,7 +13,7 @@ steps:
 - script: echo 'Iniciando Deploy a Producción...'
   displayName: 'Verificar Agente'
 
-# Verificación de las variables de los tokens
+# Paso 2: Verificación de las variables de los tokens
 - script: |
     echo "Verificando AZURE_TOKEN..."
     echo $(AZURE_TOKEN)  # Esto imprimirá el valor del AZURE_TOKEN
@@ -24,20 +24,26 @@ steps:
     echo $(GITHUB_TOKEN)  # Esto imprimirá el valor del GITHUB_TOKEN
   displayName: 'Verificar GITHUB_TOKEN'
 
-# Paso 2: Despliegue (personalizable)
-# Aquí puedes poner AzureWebApp o cualquier otra acción de despliegue real.
-# - task: AzureWebApp@1
-#   inputs:
-#     azureSubscription: '<NOMBRE-CONEXIÓN-SERVICIO>'
-#     appName: '<NOMBRE-WEBAPP>'
-#     package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-#   displayName: 'Desplegar a Producción'
+# Paso 3: Empaquetar la aplicación en un archivo .zip
+- script: |
+    echo "Empaquetando la aplicación..."
+    # Usamos el comando de PowerShell o bash para crear el archivo zip
+    powershell Compress-Archive -Path $(Build.SourcesDirectory)\* -DestinationPath $(Build.ArtifactStagingDirectory)\NaVisheWebApp.zip
+  displayName: 'Empaquetar la aplicación'
 
-# Paso 3: Notificación de despliegue
+# Paso 4: Despliegue a Producción (personalizable)
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'AzureForStudentsConnection'
+    appName: 'NaVisheWebApp'
+    package: '$(Build.ArtifactStagingDirectory)/NaVisheWebApp.zip'
+    displayName: 'Desplegar a Producción'
+
+# Paso 5: Notificación de despliegue
 - script: echo "🚀 Despliegue completado en Producción"
   displayName: 'Finalización del Deploy'
 
-# Paso 4: Push automático desde Azure a GitHub (Reemplazo completo)
+# Paso 6: Push automático desde Azure a GitHub (Reemplazo completo)
 - script: |
     rem Configuramos los usuarios de git
     git config --global user.email "dvegacajas2@gmail.com"
